@@ -1,0 +1,150 @@
+#+TITLE: Gemini REPL Development Context
+#+AUTHOR: AI Assistant Session
+#+DATE: 2025-07-14
+
+* Project Overview
+
+** Purpose
+Building a ClojureScript REPL for interacting with the Gemini API, featuring formal specifications, literate programming, and self-hosting capabilities.
+
+** Development Philosophy
+- Literate programming with org-mode
+- Formal verification with TLA+/Alloy
+- Git notes for prompt tracking
+- Incremental development through phases
+- AI-assisted development with context preservation
+
+* Technical Architecture
+
+** Core Technologies
+- ClojureScript with Shadow-CLJS
+- Node.js interop for system features
+- Gemini API for LLM interaction
+- Formal methods for specification
+
+** Key Components
+*** REPL Core (src/gemini_repl/core.cljs)
+- Main namespace with readline interface
+- Conversation history management
+- API request handling with proper error handling
+- Command processing (/help, /exit, /clear, /stats, /context)
+
+*** Logging System
+- Dual logging: FIFO and file
+- JSON structured logs
+- Environment-based configuration
+- Silent error handling
+
+*** UI Features
+- ASCII art banner on startup
+- Compact metadata display
+- Confidence indicators (🟢 🟡 🔴)
+- Token counting and cost estimation
+
+* Development History
+
+** Phase Progression
+1. Basic Setup - Repository initialization
+2. Project Structure - Literate setup documents
+3. Claude Integration - AI assistant commands
+4. Node.js Setup - ClojureScript environment
+5. GitHub Integration - Workflows and templates
+6. Badges and Labels - Visual indicators
+7. Formal Specifications - TLA+ and Alloy specs
+8. API Integration - Gemini API connection
+9. Logging Implementation - FIFO and file logging
+10. UI Enhancements - ASCII banner
+11. Conversation Context - History tracking
+12. Development Infrastructure - Live reload, tmux
+13. Metadata Display - Compact UI improvements
+14. Quality Gates - Linting and testing
+15. Release System - Semantic versioning
+16. AI Context - Resurrection system (current)
+
+** Notable Events
+*** The Great Parenthesis Rebuild
+- Phase 14 implementation hit complex nesting issues
+- Multiple attempts to fix parenthesis matching
+- User wisdom: "think harder ; just rebuild the whole thing"
+- Complete rebuild of make-request function
+- Documented in issue #13
+
+*** Key User Guidance
+- Use gmake instead of make
+- Use --trailer for co-authorship
+- No "generated with" in commit messages
+- Conventional commits format
+
+* Current State
+
+** Completed Features
+- Interactive REPL with slash commands
+- Full conversation context preservation
+- Structured logging system
+- Formal specifications
+- Development tools integration
+- Release automation
+- Quality assurance pipeline
+
+** In Progress
+- AI Context Resurrection system
+- Self-hosting platform design
+
+** Upcoming
+- Self-modification capabilities
+- Git worktree experiments
+- Research documentation automation
+
+* Development Patterns
+
+** Git Workflow
+- Conventional commits (feat, fix, docs, etc.)
+- Git notes for prompt tracking
+- Co-authorship trailers
+- Semantic versioning
+
+** Testing Strategy
+- Shadow-CLJS test runner
+- Expect-based REPL tests
+- Linting with clj-kondo
+- Pre-release validation
+
+** Documentation
+- Org-mode for literate programming
+- README with examples
+- Command documentation
+- Formal specifications
+
+* Lessons Learned
+
+** Technical
+- ClojureScript parenthesis matching requires careful attention
+- Forward declarations needed for mutual recursion
+- Node.js interop works well with Shadow-CLJS
+- Environment variables provide flexible configuration
+
+** Process
+- Phased development helps manage complexity
+- Git notes provide excellent prompt tracking
+- AI context preservation is crucial for long sessions
+- Formal specifications catch design issues early
+
+* Future Directions
+
+** Self-Hosting Capabilities
+- REPL modifying its own code
+- Experiment isolation with git worktrees
+- Automated research documentation
+- Hot-reload for immediate testing
+
+** Enhanced AI Integration
+- Multi-model support
+- Advanced prompt engineering
+- Context window optimization
+- Cost tracking and optimization
+
+** Community Features
+- Plugin system
+- Shared prompt libraries
+- Collaborative experiments
+- Research publication tools

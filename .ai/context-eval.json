@@ -1,0 +1,66 @@
+{
+  "verification_questions": [
+    {
+      "id": 1,
+      "question": "What is the main namespace of the REPL implementation?",
+      "expected_answer": "gemini-repl.core",
+      "category": "project_structure"
+    },
+    {
+      "id": 2,
+      "question": "Which API model does the REPL use for Gemini?",
+      "expected_answer": "gemini-1.5-flash",
+      "category": "technical_details"
+    },
+    {
+      "id": 3,
+      "question": "What are the two types of logging supported?",
+      "expected_answer": "fifo and file",
+      "category": "features"
+    },
+    {
+      "id": 4,
+      "question": "What command shows conversation context?",
+      "expected_answer": "/context",
+      "category": "commands"
+    },
+    {
+      "id": 5,
+      "question": "What format is used for commit message trailers?",
+      "expected_answer": "Co-Authored-By: Claude <noreply@anthropic.com>",
+      "category": "conventions"
+    },
+    {
+      "id": 6,
+      "question": "Which formal specification languages are used?",
+      "expected_answer": "TLA+ and Alloy",
+      "category": "formal_methods"
+    },
+    {
+      "id": 7,
+      "question": "What build tool is used instead of 'make'?",
+      "expected_answer": "gmake",
+      "category": "tooling"
+    },
+    {
+      "id": 8,
+      "question": "What displays after each Gemini response?",
+      "expected_answer": "Confidence indicator, token count, cost, and response time",
+      "category": "ui"
+    },
+    {
+      "id": 9,
+      "question": "How are development prompts tracked?",
+      "expected_answer": "Using git notes",
+      "category": "development_process"
+    },
+    {
+      "id": 10,
+      "question": "What issue number documented the parenthesis rebuild adventure?",
+      "expected_answer": "#13",
+      "category": "project_history"
+    }
+  ],
+  "passing_score": 8,
+  "instructions": "Answer at least 8 questions correctly to verify context resurrection"
+}
