@@ -14,12 +14,25 @@ A simple console application in ClojureScript that provides a REPL-like interfac
 
 ** Features
 
+*** Current Features
 - Interactive REPL interface with slash commands
-- Environment variable support via .envrc
+- Conversation context maintained across interactions
+- Compact metadata display with token counts and costs
+- Real-time confidence indicators (🟢 🟡 🔴)
+- Structured JSON logging (FIFO and file)
+- Live reload development mode
 - Formal methods specifications (TLA+ and Alloy)
-- Literate programming with org-mode tangling
-- GitHub integration with CI/CD workflows
-- Comprehensive test infrastructure
+- Comprehensive test infrastructure with expect
+- ASCII art banner on startup
+- Environment variable configuration
+
+*** Configuration
+Configure behavior via environment variables in =.env=:
+- =GEMINI_API_KEY= - Your Gemini API key (required)
+- =GEMINI_LOG_ENABLED= - Enable logging (true/false)
+- =GEMINI_LOG_TYPE= - Log destination (fifo/file/both)
+- =GEMINI_LOG_FILE= - Log file path
+- =GEMINI_LOG_FIFO= - FIFO path for real-time monitoring
 
 ** Getting Started
 
@@ -90,6 +103,45 @@ Please see our contributing guidelines and use the GitHub issue templates for:
 - Bug reports
 - Feature requests
 - RFCs (Request for Comments)
+
+** UI Example
+
+#+BEGIN_EXAMPLE
+┏━╸┏━╸┏┳┓╻┏┓╻╻   ┏━┓┏━╸┏━┓╻  
+┃╺┓┣╸ ┃┃┃┃┃┗┫┃   ┣┳┛┣╸ ┣━┛┃  
+┗━┛┗━╸╹ ╹╹╹ ╹╹   ╹┗╸┗━╸╹  ┗━╸
+Type /help for commands, /exit to quit.
+
+> What is the capital of France?
+
+Gemini: The capital of France is Paris.
+[🟢 245 tokens | $0.0001 | 0.8s]
+
+> What is its population?
+
+Gemini: The population of Paris is approximately 2.1 million people within 
+the city proper, and over 12 million in the greater Paris metropolitan area.
+[🟢 312 tokens | $0.0002 | 0.9s]
+
+> /stats
+
+Session Statistics:
+  Total requests: 2
+  Total tokens: 557
+  Session time: 2 minutes
+
+> /help
+
+Gemini REPL Commands:
+  /help    - Show this help message
+  /exit    - Exit the REPL
+  /clear   - Clear the screen
+  /stats   - Show session statistics
+  /context - Show conversation context
+
+> /exit
+Goodbye!
+#+END_EXAMPLE
 
 ** License
 

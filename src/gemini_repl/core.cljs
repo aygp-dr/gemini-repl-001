@@ -118,9 +118,10 @@ Type your prompt and press Enter to send to Gemini API."))
                                                            :status (.-statusCode res)
                                                            :has_candidates (boolean (.-candidates response))})
                                                ;; Add model response to history
-                                               (when-let [text (format-response response)]
-                                                 (swap! conversation-history conj {:role "model" :content text}))
-                                               (callback response)))))))]
+                                               (let [formatted (format-response response)]
+                                                 (when (:content formatted)
+                                                   (swap! conversation-history conj {:role "model" :content (:content formatted)}))
+                                                 (callback response)))))))]
       (.on req "error" (fn [e]
                          (println "Error:" (.-message e))
                          (callback nil)))
@@ -136,11 +137,23 @@ Type your prompt and press Enter to send to Gemini API."))
                        (.-content)
                        (.-parts)
                        (aget 0)
-                       (.-text))]
-        content)
+                       (.-text))
+            usage-metadata (.-usageMetadata response)
+            prompt-tokens (.-promptTokenCount usage-metadata)
+            completion-tokens (.-candidatesTokenCount usage-metadata)
+            total-tokens (.-totalTokenCount usage-metadata)
+            ;; Rough cost estimate (Gemini 1.5 Flash pricing)
+            cost (* total-tokens 0.0000001)
+            confidence "🟢"]  ;; TODO: Determine from response
+        {:content content
+         :metadata {:tokens total-tokens
+                    :cost cost
+                    :confidence confidence}})
       (catch js/Error e
-        (str "Error parsing response: " (.-message e))))
-    "No response received"))
+        {:content (str "Error parsing response: " (.-message e))
+         :metadata nil})))
+    {:content "No response received"
+     :metadata nil}))
 
 ;; REPL Loop
 (defn process-input [input]
@@ -157,11 +170,19 @@ Type your prompt and press Enter to send to Gemini API."))
       (empty? trimmed) nil
       :else (do
               (print "\nGemini: ")
-              (make-request trimmed
-                            (fn [response]
-                              (println (format-response response))
-                              (print "\n> ")
-                              (.prompt @rl true)))))))
+              (let [start-time (.now js/Date)]
+                (make-request trimmed
+                              (fn [response]
+                                (let [formatted (format-response response)
+                                      duration (/ (- (.now js/Date) start-time) 1000)]
+                                  (println (:content formatted))
+                                  (when-let [metadata (:metadata formatted)]
+                                    (println (str "[" (:confidence metadata) " " 
+                                                (:tokens metadata) " tokens | " 
+                                                "$" (.toFixed (:cost metadata) 4) " | "
+                                                (.toFixed duration 1) "s]")))
+                                  (print "\n> ")
+                                  (.prompt @rl true))))))))
 
 (defn show-banner []
   (try
