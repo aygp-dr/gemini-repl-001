@@ -1,4 +1,4 @@
-.PHONY: help setup build dev run test clean lint verify install banner
+.PHONY: help setup build dev run test clean lint verify install banner dashboard
 
 help:
 	@echo "Available targets:"
@@ -11,6 +11,7 @@ help:
 	@echo "  lint     - Run linter"
 	@echo "  verify   - Verify formal specifications"
 	@echo "  banner   - Generate ASCII banner"
+	@echo "  dashboard - Launch tmux development dashboard"
 	@echo "  clean    - Clean build artifacts"
 
 install:
@@ -38,7 +39,12 @@ build: install banner
 	@npm run build
 
 dev: install
-	@npm run dev
+	@if command -v nodemon >/dev/null 2>&1; then \
+		GEMINI_LOG_ENABLED=true nodemon --watch src --watch target --ext cljs,js --exec "make run"; \
+	else \
+		npm install -g nodemon && \
+		GEMINI_LOG_ENABLED=true nodemon --watch src --watch target --ext cljs,js --exec "make run"; \
+	fi
 
 run: build
 	@bash scripts/run.sh
@@ -64,3 +70,6 @@ clean:
 	@npm run clean
 	@rm -rf node_modules
 	@echo "Cleaned build artifacts"
+
+dashboard:
+	@bash scripts/tmux-dashboard.sh
