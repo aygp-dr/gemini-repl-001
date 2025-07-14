@@ -6,6 +6,7 @@
 (def readline (nodejs/require "readline"))
 (def process (nodejs/require "process"))
 (def https (nodejs/require "https"))
+(def fs (nodejs/require "fs"))
 
 (defonce rl (atom nil))
 
@@ -14,6 +15,11 @@
                  (throw (js/Error. "GEMINI_API_KEY environment variable is required"))))
 
 (def api-endpoint "generativelanguage.googleapis.com")
+
+;; Logging configuration
+(def log-enabled (= "true" (.-GEMINI_LOG_ENABLED (.-env process))))
+(def log-type (or (.-GEMINI_LOG_TYPE (.-env process)) "fifo"))
+(def log-fifo (or (.-GEMINI_LOG_FIFO (.-env process)) "/tmp/gemini-repl.fifo"))
 
 ;; Commands
 (defn show-help []
@@ -35,8 +41,23 @@ Type your prompt and press Enter to send to Gemini API."))
   (println "  Total tokens: 0")
   (println "  Session time: 0 minutes"))
 
+;; Logging
+(defn log-to-fifo [event-type data]
+  (when (and log-enabled (or (= log-type "fifo") (= log-type "both")))
+    (let [log-entry (js/JSON.stringify
+                     #js {:timestamp (.toISOString (js/Date.))
+                          :event event-type
+                          :data (clj->js data)})]
+      (try
+        (.appendFileSync fs log-fifo (str log-entry "\n"))
+        (catch js/Error _e
+          ;; Silently ignore FIFO errors
+          nil)))))
+
 ;; API Communication
 (defn make-request [prompt callback]
+  (log-to-fifo "api_request" {:prompt_length (count prompt)
+                               :model "gemini-1.5-flash"})
   (let [data (js/JSON.stringify
               #js {:contents
                    #js [#js {:parts
@@ -46,7 +67,8 @@ Type your prompt and press Enter to send to Gemini API."))
                      :path (str "/v1beta/models/gemini-1.5-flash:generateContent?key=" api-key)
                      :method "POST"
                      :headers #js {"Content-Type" "application/json"
-                                   "Content-Length" (.-length data)}}]
+                                   "Content-Length" (.-length data)}}
+        start-time (.now js/Date)]
     
     (let [req (.request https options
                         (fn [res]
@@ -55,7 +77,12 @@ Type your prompt and press Enter to send to Gemini API."))
                                               (swap! chunks conj chunk)))
                             (.on res "end" (fn []
                                              (let [body (.toString (.concat js/Buffer (clj->js @chunks)))
-                                                   response (js/JSON.parse body)]
+                                                   response (js/JSON.parse body)
+                                                   duration (- (.now js/Date) start-time)]
+                                               (log-to-fifo "api_response" 
+                                                            {:duration_ms duration
+                                                             :status (.-statusCode res)
+                                                             :has_candidates (boolean (.-candidates response))})
                                                (callback response)))))))]
       (.on req "error" (fn [e]
                          (println "Error:" (.-message e))

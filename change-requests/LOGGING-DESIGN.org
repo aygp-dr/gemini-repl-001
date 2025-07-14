@@ -1,0 +1,75 @@
+#+TITLE: Logging Design for Gemini REPL
+#+AUTHOR: jwalsh
+#+DATE: 2025-07-14
+
+* Logging System Design
+
+** Overview
+
+The Gemini REPL needs a comprehensive logging system to track API interactions, debug issues, and monitor usage.
+
+** Requirements
+
+*** Functional Requirements
+1. Log all API requests and responses
+2. Support multiple log destinations (FIFO, file, console)
+3. Configurable log levels (debug, info, warn, error)
+4. Structured JSON logging for machine parsing
+5. Minimal performance impact
+
+*** Non-Functional Requirements
+1. Non-blocking logging operations
+2. Automatic log rotation for file logs
+3. Privacy-preserving (no API keys in logs)
+4. Timestamp all log entries
+
+** Implementation Strategy
+
+*** Log Types
+- FIFO logging for real-time monitoring
+- File logging for persistence
+- Console logging for development
+
+*** Configuration
+Environment variables:
+- GEMINI_LOG_ENABLED=true/false
+- GEMINI_LOG_TYPE=fifo/file/both/console
+- GEMINI_LOG_LEVEL=debug/info/warn/error
+- GEMINI_LOG_FILE=path/to/logfile
+- GEMINI_LOG_FIFO=path/to/fifo
+
+*** Log Format
+#+BEGIN_SRC json
+{
+  "timestamp": "2025-07-14T12:00:00Z",
+  "level": "info",
+  "event": "api_request",
+  "data": {
+    "prompt_length": 50,
+    "model": "gemini-1.5-flash"
+  }
+}
+#+END_SRC
+
+** Implementation Phases
+
+*** Phase 1: Minimal FIFO Logging
+- Add basic FIFO support
+- Log API requests/responses
+- JSON format
+
+*** Phase 2: File Logging
+- Add file logging support
+- Implement log rotation
+- Support both FIFO and file
+
+*** Phase 3: Advanced Features
+- Log levels
+- Filtering
+- Analytics
+
+** Testing
+
+1. Create FIFO: mkfifo /tmp/gemini-repl.fifo
+2. Monitor: tail -f /tmp/gemini-repl.fifo
+3. Run REPL and verify logs appear
