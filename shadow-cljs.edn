@@ -6,7 +6,7 @@
  {:app
   {:target :node-script
    :output-to "target/main.js"
-   :main gemini-repl.core/main
+   :main gemini-repl.core/-main
    :devtools {:after-load gemini-repl.core/reload}}
   
   :test

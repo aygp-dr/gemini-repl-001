@@ -11,6 +11,9 @@
 (defonce rl (atom nil))
 (defonce conversation-history (atom []))
 
+;; Forward declarations
+(declare format-response)
+
 ;; Configuration
 (def api-key (or (.-GEMINI_API_KEY (.-env process))
                  (throw (js/Error. "GEMINI_API_KEY environment variable is required"))))
@@ -102,31 +105,30 @@ Type your prompt and press Enter to send to Gemini API."))
                      :method "POST"
                      :headers #js {"Content-Type" "application/json"
                                    "Content-Length" (.-length data)}}
-        start-time (.now js/Date)]
-    
-    (let [req (.request https options
-                        (fn [res]
-                          (let [chunks (atom [])]
-                            (.on res "data" (fn [chunk]
-                                              (swap! chunks conj chunk)))
-                            (.on res "end" (fn []
-                                             (let [body (.toString (.concat js/Buffer (clj->js @chunks)))
-                                                   response (js/JSON.parse body)
-                                                   duration (- (.now js/Date) start-time)]
-                                               (log-entry "api_response" 
-                                                          {:duration_ms duration
-                                                           :status (.-statusCode res)
-                                                           :has_candidates (boolean (.-candidates response))})
-                                               ;; Add model response to history
-                                               (let [formatted (format-response response)]
-                                                 (when (:content formatted)
-                                                   (swap! conversation-history conj {:role "model" :content (:content formatted)}))
-                                                 (callback response)))))))]
-      (.on req "error" (fn [e]
-                         (println "Error:" (.-message e))
-                         (callback nil)))
-      (.write req data)
-      (.end req))))
+        start-time (.now js/Date)
+        req (.request https options
+                      (fn [res]
+                        (let [chunks (atom [])]
+                          (.on res "data" (fn [chunk]
+                                            (swap! chunks conj chunk)))
+                          (.on res "end" (fn []
+                                           (let [body (.toString (.concat js/Buffer (clj->js @chunks)))
+                                                 response (js/JSON.parse body)
+                                                 duration (- (.now js/Date) start-time)]
+                                             (log-entry "api_response" 
+                                                        {:duration_ms duration
+                                                         :status (.-statusCode res)
+                                                         :has_candidates (boolean (.-candidates response))})
+                                             ;; Add model response to history
+                                             (let [formatted (format-response response)]
+                                               (when (:content formatted)
+                                                 (swap! conversation-history conj {:role "model" :content (:content formatted)}))
+                                               (callback response))))))))]
+    (.on req "error" (fn [e]
+                       (println "Error:" (.-message e))
+                       (callback nil)))
+    (.write req data)
+    (.end req)))
 
 (defn format-response [response]
   (if response
@@ -139,8 +141,6 @@ Type your prompt and press Enter to send to Gemini API."))
                        (aget 0)
                        (.-text))
             usage-metadata (.-usageMetadata response)
-            prompt-tokens (.-promptTokenCount usage-metadata)
-            completion-tokens (.-candidatesTokenCount usage-metadata)
             total-tokens (.-totalTokenCount usage-metadata)
             ;; Rough cost estimate (Gemini 1.5 Flash pricing)
             cost (* total-tokens 0.0000001)
@@ -151,7 +151,7 @@ Type your prompt and press Enter to send to Gemini API."))
                     :confidence confidence}})
       (catch js/Error e
         {:content (str "Error parsing response: " (.-message e))
-         :metadata nil})))
+         :metadata nil}))
     {:content "No response received"
      :metadata nil}))
 
@@ -182,7 +182,7 @@ Type your prompt and press Enter to send to Gemini API."))
                                                 "$" (.toFixed (:cost metadata) 4) " | "
                                                 (.toFixed duration 1) "s]")))
                                   (print "\n> ")
-                                  (.prompt @rl true))))))))
+                                  (.prompt @rl true)))))))))
 
 (defn show-banner []
   (try
@@ -194,7 +194,7 @@ Type your prompt and press Enter to send to Gemini API."))
       (println "GEMINI REPL v0.1.0\n==================\n")))
   (println "Type /help for commands, /exit to quit.\n"))
 
-(defn -main [& args]
+(defn -main [& _args]
   (show-banner)
   (let [rl-interface (.createInterface readline
                                        #js {:input (.-stdin process)
