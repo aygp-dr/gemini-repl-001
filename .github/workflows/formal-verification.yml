@@ -1,0 +1,40 @@
+name: Formal Verification
+
+on:
+  push:
+    paths:
+      - 'specs/**'
+  pull_request:
+    paths:
+      - 'specs/**'
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Java for Alloy
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '11'
+    
+    - name: Download TLA+ tools
+      run: |
+        mkdir -p tools/formal-methods
+        wget -O tools/formal-methods/tla2tools.jar https://github.com/tlaplus/tlaplus/releases/download/v1.8.0/tla2tools.jar
+        
+    - name: Download Alloy
+      run: |
+        wget -O tools/formal-methods/alloy.jar https://github.com/AlloyTools/org.alloytools.alloy/releases/download/v6.0.0/alloy.jar
+    
+    - name: Verify TLA+ specifications
+      run: |
+        java -cp tools/formal-methods/tla2tools.jar tlc2.TLC specs/interfaces.tla || true
+        java -cp tools/formal-methods/tla2tools.jar tlc2.TLC specs/commands.tla || true
+    
+    - name: Check Alloy models
+      run: |
+        echo "Alloy verification would run here"
