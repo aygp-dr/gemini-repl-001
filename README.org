@@ -4,11 +4,11 @@
 
 * Gemini REPL
 
-[[https://github.com/aygp-dr/gemini-repl-001/blob/main/LICENSE][https://img.shields.io/badge/License-MIT-yellow.svg]]
-[[https://github.com/aygp-dr/gemini-repl-001/actions/workflows/ci.yml][https://github.com/aygp-dr/gemini-repl-001/actions/workflows/ci.yml/badge.svg]]
-[[https://clojurescript.org][https://img.shields.io/badge/ClojureScript-Shadow--CLJS-blue]]
-[[https://github.com/tlaplus][https://img.shields.io/badge/Formal-TLA%2B-purple]]
-[[https://alloytools.org][https://img.shields.io/badge/Formal-Alloy-green]]
+[[https://github.com/aygp-dr/gemini-repl-001/blob/main/LICENSE][file:https://img.shields.io/badge/License-MIT-yellow.svg]]
+[[https://github.com/aygp-dr/gemini-repl-001/actions/workflows/ci.yml][file:https://github.com/aygp-dr/gemini-repl-001/actions/workflows/ci.yml/badge.svg]]
+[[https://clojurescript.org][file:https://img.shields.io/badge/ClojureScript-Shadow--CLJS-blue.svg]]
+[[https://github.com/tlaplus][file:https://img.shields.io/badge/Formal-TLA%2B-purple.svg]]
+[[https://alloytools.org][file:https://img.shields.io/badge/Formal-Alloy-green.svg]]
 
 A simple console application in ClojureScript that provides a REPL-like interface for interacting with the Gemini API, featuring formal specifications, literate programming, and self-hosting capabilities.
 
