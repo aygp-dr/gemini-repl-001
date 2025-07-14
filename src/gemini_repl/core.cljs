@@ -9,6 +9,7 @@
 (def fs (nodejs/require "fs"))
 
 (defonce rl (atom nil))
+(defonce conversation-history (atom []))
 
 ;; Configuration
 (def api-key (or (.-GEMINI_API_KEY (.-env process))
@@ -30,6 +31,7 @@ Gemini REPL Commands:
   /exit    - Exit the REPL
   /clear   - Clear the screen
   /stats   - Show session statistics
+  /context - Show conversation context
   
 Type your prompt and press Enter to send to Gemini API."))
 
@@ -41,6 +43,15 @@ Type your prompt and press Enter to send to Gemini API."))
   (println "  Total requests: 0")
   (println "  Total tokens: 0")
   (println "  Session time: 0 minutes"))
+
+(defn show-context []
+  (println "\nConversation Context:")
+  (if (empty? @conversation-history)
+    (println "  No conversation history yet.")
+    (doseq [[idx msg] (map-indexed vector @conversation-history)]
+      (println (str "  " (inc idx) ". [" (:role msg) "] " 
+                   (subs (:content msg) 0 (min 50 (count (:content msg)))) 
+                   (when (> (count (:content msg)) 50) "..."))))))
 
 ;; Logging
 (defn log-to-fifo [event-type data]
@@ -73,12 +84,18 @@ Type your prompt and press Enter to send to Gemini API."))
 
 ;; API Communication
 (defn make-request [prompt callback]
+  ;; Add user message to history
+  (swap! conversation-history conj {:role "user" :content prompt})
+  
   (log-entry "api_request" {:prompt_length (count prompt)
                              :model "gemini-1.5-flash"})
-  (let [data (js/JSON.stringify
-              #js {:contents
-                   #js [#js {:parts
-                             #js [#js {:text prompt}]}]})
+  
+  ;; Build contents array with full conversation history
+  (let [contents (clj->js (mapv (fn [msg]
+                                   #js {:role (:role msg)
+                                        :parts #js [#js {:text (:content msg)}]})
+                                 @conversation-history))
+        data (js/JSON.stringify #js {:contents contents})
         options #js {:hostname api-endpoint
                      :port 443
                      :path (str "/v1beta/models/gemini-1.5-flash:generateContent?key=" api-key)
@@ -100,6 +117,9 @@ Type your prompt and press Enter to send to Gemini API."))
                                                           {:duration_ms duration
                                                            :status (.-statusCode res)
                                                            :has_candidates (boolean (.-candidates response))})
+                                               ;; Add model response to history
+                                               (when-let [text (format-response response)]
+                                                 (swap! conversation-history conj {:role "model" :content text}))
                                                (callback response)))))))]
       (.on req "error" (fn [e]
                          (println "Error:" (.-message e))
@@ -133,6 +153,7 @@ Type your prompt and press Enter to send to Gemini API."))
                             (.exit process 0))
       (= trimmed "/clear") (clear-screen)
       (= trimmed "/stats") (show-stats)
+      (= trimmed "/context") (show-context)
       (empty? trimmed) nil
       :else (do
               (print "\nGemini: ")
