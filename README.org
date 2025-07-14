@@ -4,20 +4,93 @@
 
 * Gemini REPL
 
-A simple console application in ClojureScript that provides a REPL-like interface for interacting with the Gemini API.
+[[https://github.com/aygp-dr/gemini-repl-001/blob/main/LICENSE][https://img.shields.io/badge/License-MIT-yellow.svg]]
+[[https://github.com/aygp-dr/gemini-repl-001/actions/workflows/ci.yml][https://github.com/aygp-dr/gemini-repl-001/actions/workflows/ci.yml/badge.svg]]
+[[https://clojurescript.org][https://img.shields.io/badge/ClojureScript-Shadow--CLJS-blue]]
+[[https://github.com/tlaplus][https://img.shields.io/badge/Formal-TLA%2B-purple]]
+[[https://alloytools.org][https://img.shields.io/badge/Formal-Alloy-green]]
+
+A simple console application in ClojureScript that provides a REPL-like interface for interacting with the Gemini API, featuring formal specifications, literate programming, and self-hosting capabilities.
 
 ** Features
 
-- Simple REPL interface with slash commands
+- Interactive REPL interface with slash commands
 - Environment variable support via .envrc
-- Formal methods specifications
+- Formal methods specifications (TLA+ and Alloy)
+- Literate programming with org-mode tangling
+- GitHub integration with CI/CD workflows
+- Comprehensive test infrastructure
 
 ** Getting Started
 
-1. Copy .env.example to .env and add your Gemini API key
-2. Follow SETUP.org for complete installation
+1. Clone the repository:
+   #+BEGIN_SRC bash
+   git clone https://github.com/aygp-dr/gemini-repl-001.git
+   cd gemini-repl-001
+   #+END_SRC
+
+2. Set up environment:
+   #+BEGIN_SRC bash
+   cp .env.example .env
+   # Edit .env and add your GEMINI_API_KEY
+   #+END_SRC
+
+3. Install dependencies:
+   #+BEGIN_SRC bash
+   npm install
+   #+END_SRC
+
+4. Run the REPL:
+   #+BEGIN_SRC bash
+   make run
+   # or
+   npm run build && node target/main.js
+   #+END_SRC
 
 ** Commands
 
-- /help - Show available commands
-- /exit - Exit the REPL
+- =/help= - Show available commands
+- =/exit= - Exit the REPL
+- =/clear= - Clear the screen
+- =/stats= - Show session statistics
+
+** Development
+
+*** Building
+#+BEGIN_SRC bash
+make build
+#+END_SRC
+
+*** Testing
+#+BEGIN_SRC bash
+make test
+#+END_SRC
+
+*** Linting
+#+BEGIN_SRC bash
+make lint
+#+END_SRC
+
+*** Development Mode
+#+BEGIN_SRC bash
+make dev
+#+END_SRC
+
+** Project Structure
+
+- =src/= - ClojureScript source code
+- =specs/= - Formal specifications (TLA+ and Alloy)
+- =tests/= - Test files
+- =.claude/commands/= - AI assistant command definitions
+- =.github/= - GitHub workflows and templates
+
+** Contributing
+
+Please see our contributing guidelines and use the GitHub issue templates for:
+- Bug reports
+- Feature requests
+- RFCs (Request for Comments)
+
+** License
+
+MIT License - see LICENSE file for details
