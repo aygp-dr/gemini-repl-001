@@ -1,0 +1,63 @@
+#!/usr/bin/expect -f
+# Test script for Gemini REPL using expect
+
+set timeout 10
+
+# Check if API key is set
+if {![info exists env(GEMINI_API_KEY)]} {
+    puts "Error: GEMINI_API_KEY not set"
+    exit 1
+}
+
+# Start the REPL
+spawn node target/main.js
+
+# Wait for banner
+expect {
+    "GEMINI REPL" { puts "✓ Banner displayed" }
+    timeout { puts "✗ Banner timeout"; exit 1 }
+}
+
+# Test /help command
+send "/help\r"
+expect {
+    "Gemini REPL Commands:" { puts "✓ Help command works" }
+    timeout { puts "✗ Help timeout"; exit 1 }
+}
+
+# Test /stats command
+send "/stats\r"
+expect {
+    "Session Statistics:" { puts "✓ Stats command works" }
+    timeout { puts "✗ Stats timeout"; exit 1 }
+}
+
+# Test /clear command
+send "/clear\r"
+expect {
+    -re "\033\\[2J\033\\[H" { puts "✓ Clear command works" }
+    timeout { puts "✗ Clear timeout"; exit 1 }
+}
+
+# Test simple prompt
+send "What is 2+2?\r"
+expect {
+    "Gemini:" { puts "✓ API response received" }
+    timeout { puts "✗ API timeout"; exit 1 }
+}
+
+# Wait for response completion
+expect {
+    ">" { puts "✓ Prompt returned" }
+    timeout { puts "✗ Prompt timeout"; exit 1 }
+}
+
+# Test /exit command
+send "/exit\r"
+expect {
+    "Goodbye!" { puts "✓ Exit command works" }
+    timeout { puts "✗ Exit timeout"; exit 1 }
+}
+
+expect eof
+puts "\n✓ All tests passed!"

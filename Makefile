@@ -31,6 +31,12 @@ run: build
 
 test: install
 	@npm test
+	@if command -v expect >/dev/null 2>&1; then \
+		echo "Running REPL tests..."; \
+		./scripts/test-repl.exp; \
+	else \
+		echo "Expect not installed, skipping REPL tests"; \
+	fi
 
 lint:
 	@echo "Linting ClojureScript files..."

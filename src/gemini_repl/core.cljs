@@ -54,7 +54,7 @@ Type your prompt and press Enter to send to Gemini API."))
                             (.on res "data" (fn [chunk]
                                               (swap! chunks conj chunk)))
                             (.on res "end" (fn []
-                                             (let [body (.toString (.concat js/Buffer @chunks))
+                                             (let [body (.toString (.concat js/Buffer (clj->js @chunks)))
                                                    response (js/JSON.parse body)]
                                                (callback response)))))))]
       (.on req "error" (fn [e]
