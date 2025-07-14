@@ -1,0 +1,31 @@
+#+TITLE: Claude Commands
+#+AUTHOR: jwalsh
+#+DATE: 2025-07-14
+
+* Claude Commands
+
+This directory contains command definitions for Claude Code to provide structured guidance for common development tasks.
+
+** Available Commands
+
+- =analyze.md= - Codebase analysis and understanding
+- =create-cr.md= - Change request creation
+- =experiment.md= - Experimental development
+- =github.md= - GitHub workflow integration
+- =implement.md= - Feature implementation
+- =mise-en-place.md= - Development environment setup
+- =research.md= - Research and investigation
+- =self-analyze.md= - AI capability assessment
+- =spec-check.md= - Formal specification validation
+
+** Usage
+
+These commands provide structured approaches to common development tasks, ensuring consistency and quality across the project.
+
+** Context
+
+Commands are adapted for:
+- ClojureScript/Shadow-CLJS development
+- Formal methods with TLA+ and Alloy
+- REPL-style application development
+- GitHub-based workflow

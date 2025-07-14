@@ -1,0 +1,362 @@
+#+TITLE: SHARED-SETUP.org - Claude Command Infrastructure
+#+AUTHOR: jwalsh + Claude
+#+DATE: 2025-07-14
+#+STARTUP: overview
+
+* Claude Command Infrastructure
+
+This file creates the .claude/commands/ directory structure and command definitions adapted for the Gemini REPL's ClojureScript/formal-methods context.
+
+** Directory Structure
+
+#+BEGIN_SRC bash :tangle create-claude-dirs.sh :shebang #!/bin/bash
+mkdir -p .claude/commands/
+chmod +x create-claude-dirs.sh
+#+END_SRC
+
+** Claude Commands
+
+*** Analyze Command
+
+#+BEGIN_SRC markdown :tangle .claude/commands/analyze.md
+# Analyze Command
+
+## Purpose
+Analyze the current codebase structure, dependencies, and patterns.
+
+## Usage
+Use this command to understand the project structure before making changes.
+
+## Context
+- ClojureScript/Shadow-CLJS project
+- Formal methods with TLA+ and Alloy
+- REPL-style application
+- GitHub integration
+
+## Process
+1. Examine project structure
+2. Review dependencies and configuration
+3. Identify patterns and conventions
+4. Report findings and recommendations
+#+END_SRC
+
+*** Create Change Request Command
+
+#+BEGIN_SRC markdown :tangle .claude/commands/create-cr.md
+# Create Change Request
+
+## Purpose
+Create a structured change request document in the change-requests/ directory.
+
+## Usage
+Use this to propose significant changes or new features.
+
+## Template
+```org
+#+TITLE: Change Request - [Feature Name]
+#+AUTHOR: [Author]
+#+DATE: [Date]
+
+* Problem Statement
+[Description of the problem or need]
+
+* Proposed Solution
+[Detailed description of the proposed solution]
+
+* Implementation Plan
+[Step-by-step implementation approach]
+
+* Testing Strategy
+[How the change will be tested]
+
+* Risks and Mitigation
+[Potential risks and how to address them]
+```
+
+## Process
+1. Create document in change-requests/
+2. Review with team
+3. Implement changes
+4. Archive when complete
+#+END_SRC
+
+*** Experiment Command
+
+#+BEGIN_SRC markdown :tangle .claude/commands/experiment.md
+# Experiment Command
+
+## Purpose
+Set up and manage experimental code and proof-of-concept implementations.
+
+## Usage
+Use this for trying new approaches or testing ideas safely.
+
+## Structure
+```
+experiments/
+├── [experiment-name]/
+│   ├── README.org
+│   ├── src/
+│   └── notes.org
+```
+
+## Process
+1. Create experiment directory
+2. Document hypothesis and goals
+3. Implement proof-of-concept
+4. Document findings
+5. Archive or integrate findings
+#+END_SRC
+
+*** GitHub Integration Command
+
+#+BEGIN_SRC markdown :tangle .claude/commands/github.md
+# GitHub Integration Command
+
+## Purpose
+Manage GitHub-related tasks including issues, PRs, and releases.
+
+## Usage
+Use this for GitHub workflow automation and management.
+
+## Commands
+- `gh issue create` - Create new issues
+- `gh pr create` - Create pull requests
+- `gh release create` - Create releases
+- `gh repo view` - View repository information
+
+## Templates
+- Bug reports
+- Feature requests
+- RFC proposals
+
+## Process
+1. Use GitHub CLI for automation
+2. Follow conventional commit messages
+3. Link issues to PRs
+4. Use proper labels and milestones
+#+END_SRC
+
+*** Implementation Command
+
+#+BEGIN_SRC markdown :tangle .claude/commands/implement.md
+# Implementation Command
+
+## Purpose
+Guide systematic implementation of features and changes.
+
+## Usage
+Use this for structured feature development.
+
+## Process
+1. Review requirements and design
+2. Update formal specifications if needed
+3. Implement core functionality
+4. Write tests
+5. Update documentation
+6. Run quality checks (lint, test, verify)
+7. Create PR with proper description
+
+## Quality Gates
+- `make lint` - Code quality
+- `make test` - Unit tests
+- `make verify` - Formal specification validation
+- `make build` - Compilation check
+#+END_SRC
+
+*** Mise en Place Command
+
+#+BEGIN_SRC markdown :tangle .claude/commands/mise-en-place.md
+# Mise en Place Command
+
+## Purpose
+Prepare the development environment and workspace for productive coding.
+
+## Usage
+Use this at the start of development sessions.
+
+## Checklist
+- [ ] Environment variables configured (.env)
+- [ ] Dependencies installed and up-to-date
+- [ ] Git status clean or changes staged appropriately
+- [ ] Development tools available (Shadow-CLJS, TLA+, Alloy)
+- [ ] Documentation reviewed
+- [ ] Issues and PRs triaged
+
+## Setup Commands
+```bash
+make setup
+npm install
+make build
+make test
+```
+
+## Development Flow
+1. Check git status
+2. Review open issues
+3. Plan work session
+4. Set up development environment
+5. Begin implementation
+#+END_SRC
+
+*** Research Command
+
+#+BEGIN_SRC markdown :tangle .claude/commands/research.md
+# Research Command
+
+## Purpose
+Structure research activities and document findings systematically.
+
+## Usage
+Use this for investigating new technologies, patterns, or solutions.
+
+## Structure
+```
+research/
+├── [topic]/
+│   ├── README.org
+│   ├── sources.org
+│   ├── experiments/
+│   └── findings.org
+```
+
+## Process
+1. Define research question
+2. Identify sources and references
+3. Conduct experiments if needed
+4. Document findings
+5. Make recommendations
+6. Archive or apply findings
+
+## Documentation
+- Use org-mode for structured documentation
+- Include references and links
+- Document methodology
+- Record conclusions and next steps
+#+END_SRC
+
+*** Self-Analysis Command
+
+#+BEGIN_SRC markdown :tangle .claude/commands/self-analyze.md
+# Self-Analysis Command
+
+## Purpose
+Analyze AI assistant capabilities and limitations in the context of this project.
+
+## Usage
+Use this to understand what the AI can and cannot do effectively.
+
+## Analysis Areas
+- Code understanding and generation
+- Formal methods knowledge
+- ClojureScript/Shadow-CLJS expertise
+- Testing and quality assurance
+- Documentation generation
+- Project management
+
+## Capability Assessment
+1. Strong areas where AI excels
+2. Areas requiring human oversight
+3. Knowledge gaps or limitations
+4. Recommended collaboration patterns
+
+## Growth Areas
+- Learning from project patterns
+- Adapting to project conventions
+- Improving over time
+#+END_SRC
+
+*** Specification Check Command
+
+#+BEGIN_SRC markdown :tangle .claude/commands/spec-check.md
+# Specification Check Command
+
+## Purpose
+Validate formal specifications and ensure they align with implementation.
+
+## Usage
+Use this to maintain consistency between specs and code.
+
+## Validation Process
+1. Check TLA+ syntax and semantics
+2. Verify Alloy model consistency
+3. Ensure specs match implementation behavior
+4. Run formal verification tools
+5. Document any discrepancies
+
+## Tools
+- TLA+ model checker
+- Alloy analyzer
+- Custom validation scripts
+
+## Commands
+```bash
+make verify
+make verify-tla
+make verify-alloy
+```
+
+## Documentation
+- Update specs when implementation changes
+- Document verification results
+- Maintain traceability between specs and code
+#+END_SRC
+
+** README for Commands
+
+#+BEGIN_SRC org :tangle .claude/commands/README.org
+#+TITLE: Claude Commands
+#+AUTHOR: jwalsh
+#+DATE: 2025-07-14
+
+* Claude Commands
+
+This directory contains command definitions for Claude Code to provide structured guidance for common development tasks.
+
+** Available Commands
+
+- =analyze.md= - Codebase analysis and understanding
+- =create-cr.md= - Change request creation
+- =experiment.md= - Experimental development
+- =github.md= - GitHub workflow integration
+- =implement.md= - Feature implementation
+- =mise-en-place.md= - Development environment setup
+- =research.md= - Research and investigation
+- =self-analyze.md= - AI capability assessment
+- =spec-check.md= - Formal specification validation
+
+** Usage
+
+These commands provide structured approaches to common development tasks, ensuring consistency and quality across the project.
+
+** Context
+
+Commands are adapted for:
+- ClojureScript/Shadow-CLJS development
+- Formal methods with TLA+ and Alloy
+- REPL-style application development
+- GitHub-based workflow
+#+END_SRC
+
+** Git Pre-commit Hook
+
+#+BEGIN_SRC bash :tangle .git/hooks/pre-commit :shebang #!/bin/bash
+# Pre-commit hook for Gemini REPL
+
+# Check for secrets in commit
+if git diff --cached --name-only | xargs grep -l "GEMINI_API_KEY.*=" 2>/dev/null | grep -v ".env.example"; then
+    echo "Error: Potential API key found in staged files"
+    exit 1
+fi
+
+# Run linting if available
+if command -v make >/dev/null 2>&1 && make -n lint >/dev/null 2>&1; then
+    make lint
+    if [ $? -ne 0 ]; then
+        echo "Error: Linting failed"
+        exit 1
+    fi
+fi
+
+exit 0
+#+END_SRC
