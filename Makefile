@@ -1,26 +1,45 @@
-.PHONY: help build test clean setup verify
+.PHONY: help setup build dev run test clean lint verify install
 
 help:
 	@echo "Available targets:"
+	@echo "  install  - Install npm dependencies"
 	@echo "  setup    - Create directory structure"
 	@echo "  build    - Build the project"
+	@echo "  dev      - Start development server"
+	@echo "  run      - Run the REPL"
 	@echo "  test     - Run tests"
+	@echo "  lint     - Run linter"
 	@echo "  verify   - Verify formal specifications"
 	@echo "  clean    - Clean build artifacts"
+
+install:
+	@npm install
+	@echo "Dependencies installed"
 
 setup:
 	@bash create-dirs.sh
 	@echo "Directory structure created"
 
-build:
-	@echo "Build target - to be implemented"
+build: install
+	@npm run build
 
-test:
-	@echo "Test target - to be implemented"
+dev: install
+	@npm run dev
+
+run: build
+	@bash scripts/run.sh
+
+test: install
+	@npm test
+
+lint:
+	@echo "Linting ClojureScript files..."
+	@npx clj-kondo --lint src test || true
 
 verify:
 	@echo "Verification target - to be implemented"
 
 clean:
-	@rm -rf target/ dist/ tmp/*
+	@npm run clean
+	@rm -rf node_modules
 	@echo "Cleaned build artifacts"

@@ -1,0 +1,20 @@
+{
+  "name": "gemini-repl",
+  "version": "0.1.0",
+  "description": "Simple REPL interface for Gemini API in ClojureScript",
+  "main": "target/main.js",
+  "scripts": {
+    "dev": "shadow-cljs watch app",
+    "build": "shadow-cljs release app",
+    "clean": "rm -rf target .shadow-cljs",
+    "test": "shadow-cljs compile test && node target/test.js",
+    "repl": "shadow-cljs cljs-repl app"
+  },
+  "keywords": ["clojurescript", "gemini", "repl", "api"],
+  "author": "jwalsh",
+  "license": "MIT",
+  "devDependencies": {
+    "shadow-cljs": "^2.27.4"
+  },
+  "dependencies": {}
+}
