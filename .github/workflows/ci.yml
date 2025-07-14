@@ -22,8 +22,14 @@ jobs:
     - name: Install dependencies
       run: npm ci
     
+    - name: Install clj-kondo
+      run: |
+        curl -sLO https://raw.githubusercontent.com/clj-kondo/clj-kondo/master/script/install-clj-kondo
+        chmod +x install-clj-kondo
+        sudo ./install-clj-kondo
+    
     - name: Run linter
-      run: npm run lint || true
+      run: clj-kondo --lint src test || true
     
     - name: Run tests
       run: npm test
