@@ -20,6 +20,7 @@
 (def log-enabled (= "true" (.-GEMINI_LOG_ENABLED (.-env process))))
 (def log-type (or (.-GEMINI_LOG_TYPE (.-env process)) "fifo"))
 (def log-fifo (or (.-GEMINI_LOG_FIFO (.-env process)) "/tmp/gemini-repl.fifo"))
+(def log-file (or (.-GEMINI_LOG_FILE (.-env process)) "logs/gemini-repl.log"))
 
 ;; Commands
 (defn show-help []
@@ -54,10 +55,26 @@ Type your prompt and press Enter to send to Gemini API."))
           ;; Silently ignore FIFO errors
           nil)))))
 
+(defn log-to-file [event-type data]
+  (when (and log-enabled (or (= log-type "file") (= log-type "both")))
+    (let [log-entry (js/JSON.stringify
+                     #js {:timestamp (.toISOString (js/Date.))
+                          :event event-type
+                          :data (clj->js data)})]
+      (try
+        (.appendFileSync fs log-file (str log-entry "\n"))
+        (catch js/Error _e
+          ;; Silently ignore file errors
+          nil)))))
+
+(defn log-entry [event-type data]
+  (log-to-fifo event-type data)
+  (log-to-file event-type data))
+
 ;; API Communication
 (defn make-request [prompt callback]
-  (log-to-fifo "api_request" {:prompt_length (count prompt)
-                               :model "gemini-1.5-flash"})
+  (log-entry "api_request" {:prompt_length (count prompt)
+                             :model "gemini-1.5-flash"})
   (let [data (js/JSON.stringify
               #js {:contents
                    #js [#js {:parts
@@ -79,10 +96,10 @@ Type your prompt and press Enter to send to Gemini API."))
                                              (let [body (.toString (.concat js/Buffer (clj->js @chunks)))
                                                    response (js/JSON.parse body)
                                                    duration (- (.now js/Date) start-time)]
-                                               (log-to-fifo "api_response" 
-                                                            {:duration_ms duration
-                                                             :status (.-statusCode res)
-                                                             :has_candidates (boolean (.-candidates response))})
+                                               (log-entry "api_response" 
+                                                          {:duration_ms duration
+                                                           :status (.-statusCode res)
+                                                           :has_candidates (boolean (.-candidates response))})
                                                (callback response)))))))]
       (.on req "error" (fn [e]
                          (println "Error:" (.-message e))
