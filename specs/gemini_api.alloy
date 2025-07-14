@@ -1,0 +1,89 @@
+module gemini_api
+
+// Token tracking
+sig Token {
+    count: Int
+} {
+    count >= 0
+}
+
+// API Models
+abstract sig Model {}
+one sig Gemini15Flash extends Model {}
+one sig Gemini15Pro extends Model {}
+
+// Request structure
+sig Request {
+    model: one Model,
+    prompt: one String,
+    temperature: Int,
+    maxTokens: Int,
+    timestamp: Int
+} {
+    temperature >= 0 and temperature <= 100
+    maxTokens > 0 and maxTokens <= 8192
+    timestamp >= 0
+}
+
+// Response structure  
+sig Response {
+    request: one Request,
+    content: one String,
+    promptTokens: Int,
+    completionTokens: Int,
+    totalTokens: Int,
+    finishReason: one FinishReason
+} {
+    promptTokens >= 0
+    completionTokens >= 0
+    totalTokens = promptTokens + completionTokens
+}
+
+// Finish reasons
+abstract sig FinishReason {}
+one sig Stop extends FinishReason {}
+one sig MaxTokens extends FinishReason {}
+one sig Error extends FinishReason {}
+
+// Session tracking
+sig Session {
+    requests: set Request,
+    responses: set Response,
+    totalCost: Int
+} {
+    totalCost >= 0
+    // Each request has at most one response
+    all req: requests | lone responses.request & req
+}
+
+// Predicates
+pred validSession[s: Session] {
+    // All responses belong to requests in this session
+    all r: s.responses | r.request in s.requests
+}
+
+pred tokenLimitRespected[r: Response] {
+    r.completionTokens <= r.request.maxTokens
+}
+
+pred properFinishReason[r: Response] {
+    r.finishReason = MaxTokens <=> r.completionTokens = r.request.maxTokens
+}
+
+// Assertions
+assert ResponseConsistency {
+    all r: Response | tokenLimitRespected[r] and properFinishReason[r]
+}
+
+assert SessionValidity {
+    all s: Session | validSession[s]
+}
+
+// Example run
+run {
+    some s: Session | #s.requests > 2 and validSession[s]
+} for 5
+
+// Check our assertions
+check ResponseConsistency for 10
+check SessionValidity for 10

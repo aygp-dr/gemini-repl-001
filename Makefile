@@ -37,7 +37,8 @@ lint:
 	@npx clj-kondo --lint src test || true
 
 verify:
-	@echo "Verification target - to be implemented"
+	@echo "Running formal verification..."
+	@$(MAKE) -C specs verify
 
 clean:
 	@npm run clean
