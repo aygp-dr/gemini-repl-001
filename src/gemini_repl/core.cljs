@@ -143,14 +143,14 @@ Type your prompt and press Enter to send to Gemini API."))
                               (.prompt @rl true)))))))
 
 (defn show-banner []
-  (println "
-╔═══════════════════════════════════╗
-║        GEMINI REPL v0.1.0         ║
-║   ClojureScript + Gemini API      ║
-╚═══════════════════════════════════╝
-
-Type /help for commands, /exit to quit.
-"))
+  (try
+    (let [banner-path "resources/repl-banner.txt"]
+      (if (.existsSync fs banner-path)
+        (print (.readFileSync fs banner-path "utf8"))
+        (println "GEMINI REPL v0.1.0\n==================\n")))
+    (catch js/Error _e
+      (println "GEMINI REPL v0.1.0\n==================\n")))
+  (println "Type /help for commands, /exit to quit.\n"))
 
 (defn -main [& args]
   (show-banner)

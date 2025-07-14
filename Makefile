@@ -1,4 +1,4 @@
-.PHONY: help setup build dev run test clean lint verify install
+.PHONY: help setup build dev run test clean lint verify install banner
 
 help:
 	@echo "Available targets:"
@@ -10,6 +10,7 @@ help:
 	@echo "  test     - Run tests"
 	@echo "  lint     - Run linter"
 	@echo "  verify   - Verify formal specifications"
+	@echo "  banner   - Generate ASCII banner"
 	@echo "  clean    - Clean build artifacts"
 
 install:
@@ -20,7 +21,20 @@ setup:
 	@bash create-dirs.sh
 	@echo "Directory structure created"
 
-build: install
+resources/:
+	@mkdir -p resources/
+
+banner: resources/
+	@if command -v toilet >/dev/null 2>&1; then \
+		toilet -f mono12 "GEMINI REPL" > resources/repl-banner.txt; \
+		echo "Banner generated"; \
+	else \
+		echo "GEMINI REPL v0.1.0" > resources/repl-banner.txt; \
+		echo "==================" >> resources/repl-banner.txt; \
+		echo "Banner created (toilet not available)"; \
+	fi
+
+build: install banner
 	@npm run build
 
 dev: install
