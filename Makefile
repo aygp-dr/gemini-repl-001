@@ -26,7 +26,7 @@ resources/:
 
 banner: resources/
 	@if command -v toilet >/dev/null 2>&1; then \
-		toilet -f mono12 "GEMINI REPL" > resources/repl-banner.txt; \
+		toilet -f future "GEMINI REPL" > resources/repl-banner.txt; \
 		echo "Banner generated"; \
 	else \
 		echo "GEMINI REPL v0.1.0" > resources/repl-banner.txt; \
