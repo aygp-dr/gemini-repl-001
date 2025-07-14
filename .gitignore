@@ -1,1 +1,11 @@
 .env
+node_modules/
+target/
+dist/
+.shadow-cljs/
+tmp/*
+logs/*.log
+.DS_Store
+*.swp
+*.swo
+*~

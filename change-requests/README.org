@@ -1,0 +1,14 @@
+#+TITLE: Change Requests
+#+AUTHOR: jwalsh
+#+DATE: 2025-07-14
+
+* Change Requests
+
+Design documents and change requests for the project.
+
+** Process
+
+1. Create design document in this directory
+2. Review and discuss
+3. Implement changes
+4. Archive completed requests

@@ -1,0 +1,12 @@
+#+TITLE: Source Code
+#+AUTHOR: jwalsh
+#+DATE: 2025-07-14
+
+* Source Code Structure
+
+ClojureScript implementation of the Gemini REPL.
+
+** Files
+
+- =gemini_repl/core.cljs= - Main REPL implementation
+- Configuration and utilities as needed

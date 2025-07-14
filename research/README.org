@@ -1,0 +1,14 @@
+#+TITLE: Research
+#+AUTHOR: jwalsh
+#+DATE: 2025-07-14
+
+* Research
+
+Research notes and investigations for the project.
+
+** Areas
+
+- Formal methods research
+- API optimization studies
+- User experience research
+- Performance analysis

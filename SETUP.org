@@ -1,0 +1,331 @@
+#+TITLE: SETUP.org - Gemini REPL Project Structure
+#+AUTHOR: jwalsh + Claude
+#+DATE: 2025-07-14
+#+STARTUP: overview
+
+* Project Structure Setup
+
+This file contains the complete directory structure and initial configuration files for the Gemini REPL project. All files will be extracted through tangling.
+
+** Directory Structure
+
+#+BEGIN_SRC bash :tangle create-dirs.sh :shebang #!/bin/bash
+mkdir -p specs/
+mkdir -p src/gemini_repl/
+mkdir -p tests/gemini_repl/
+mkdir -p docs/
+mkdir -p change-requests/
+mkdir -p experiments/
+mkdir -p research/
+mkdir -p scripts/
+mkdir -p tools/formal-methods/
+mkdir -p resources/
+mkdir -p logs/
+mkdir -p tmp/
+mkdir -p dist/
+mkdir -p target/
+chmod +x create-dirs.sh
+#+END_SRC
+
+** Formal Specifications Directory
+
+#+BEGIN_SRC org :tangle specs/README.org
+#+TITLE: Formal Specifications
+#+AUTHOR: jwalsh
+#+DATE: 2025-07-14
+
+* Formal Specifications
+
+This directory contains formal method specifications for the Gemini REPL:
+
+- TLA+ specifications for system behavior
+- Alloy models for structural properties
+- Interface specifications
+- State machine definitions
+
+** Files
+
+- =interfaces.tla= - API and command interfaces
+- =commands.tla= - Command processing logic
+- =api_client.tla= - Gemini API client behavior
+- =state.alloy= - State structure validation
+- =gemini_api.alloy= - API model validation
+#+END_SRC
+
+** Source Code Structure
+
+#+BEGIN_SRC org :tangle src/README.org
+#+TITLE: Source Code
+#+AUTHOR: jwalsh
+#+DATE: 2025-07-14
+
+* Source Code Structure
+
+ClojureScript implementation of the Gemini REPL.
+
+** Files
+
+- =gemini_repl/core.cljs= - Main REPL implementation
+- Configuration and utilities as needed
+#+END_SRC
+
+** Testing Structure
+
+#+BEGIN_SRC org :tangle tests/README.org
+#+TITLE: Testing Infrastructure
+#+AUTHOR: jwalsh
+#+DATE: 2025-07-14
+
+* Testing
+
+Unit tests and integration tests for the Gemini REPL.
+
+** Test Types
+
+- Unit tests for core functions
+- Integration tests for API communication
+- REPL interaction testing
+- Formal specification validation
+#+END_SRC
+
+** Documentation Structure
+
+#+BEGIN_SRC org :tangle docs/README.org
+#+TITLE: Documentation
+#+AUTHOR: jwalsh
+#+DATE: 2025-07-14
+
+* Documentation
+
+Project documentation and guides.
+
+** Contents
+
+- User guides
+- API documentation
+- Development guides
+- Architecture documentation
+#+END_SRC
+
+** Change Requests Structure
+
+#+BEGIN_SRC org :tangle change-requests/README.org
+#+TITLE: Change Requests
+#+AUTHOR: jwalsh
+#+DATE: 2025-07-14
+
+* Change Requests
+
+Design documents and change requests for the project.
+
+** Process
+
+1. Create design document in this directory
+2. Review and discuss
+3. Implement changes
+4. Archive completed requests
+#+END_SRC
+
+** Research Structure
+
+#+BEGIN_SRC org :tangle research/README.org
+#+TITLE: Research
+#+AUTHOR: jwalsh
+#+DATE: 2025-07-14
+
+* Research
+
+Research notes and investigations for the project.
+
+** Areas
+
+- Formal methods research
+- API optimization studies
+- User experience research
+- Performance analysis
+#+END_SRC
+
+** Experiments Structure
+
+#+BEGIN_SRC org :tangle experiments/README.org
+#+TITLE: Experiments
+#+AUTHOR: jwalsh
+#+DATE: 2025-07-14
+
+* Experiments
+
+Experimental code and proof-of-concept implementations.
+
+** Guidelines
+
+- Keep experiments isolated
+- Document findings
+- Clean up completed experiments
+- Archive useful patterns
+#+END_SRC
+
+** Initial Formal Specifications
+
+#+BEGIN_SRC tla :tangle specs/interfaces.tla
+---- MODULE interfaces ----
+EXTENDS Naturals, Sequences, TLC
+
+CONSTANTS Commands, Responses
+
+VARIABLES 
+    command_queue,
+    response_queue,
+    system_state
+
+TypeOK == 
+    /\ command_queue \in Seq(Commands)
+    /\ response_queue \in Seq(Responses)
+    /\ system_state \in {"init", "ready", "processing", "error"}
+
+Init ==
+    /\ command_queue = <<>>
+    /\ response_queue = <<>>
+    /\ system_state = "init"
+
+ProcessCommand ==
+    /\ system_state = "ready"
+    /\ Len(command_queue) > 0
+    /\ system_state' = "processing"
+    /\ command_queue' = Tail(command_queue)
+    /\ UNCHANGED response_queue
+
+Next ==
+    \/ ProcessCommand
+    \/ system_state' = system_state /\ UNCHANGED <<command_queue, response_queue>>
+
+Spec == Init /\ [][Next]_<<command_queue, response_queue, system_state>>
+
+====
+#+END_SRC
+
+#+BEGIN_SRC tla :tangle specs/commands.tla
+---- MODULE commands ----
+EXTENDS Naturals, Sequences
+
+CONSTANTS SlashCommands, UserInputs
+
+VARIABLES current_command, command_history
+
+TypeOK ==
+    /\ current_command \in SlashCommands \cup UserInputs \cup {""}
+    /\ command_history \in Seq(SlashCommands \cup UserInputs)
+
+Init ==
+    /\ current_command = ""
+    /\ command_history = <<>>
+
+ExecuteCommand ==
+    /\ current_command # ""
+    /\ command_history' = Append(command_history, current_command)
+    /\ current_command' = ""
+
+Next == ExecuteCommand
+
+Spec == Init /\ [][Next]_<<current_command, command_history>>
+
+====
+#+END_SRC
+
+#+BEGIN_SRC alloy :tangle specs/state.alloy
+module state
+
+sig Command {
+    input: one String,
+    output: lone String,
+    timestamp: one Int
+}
+
+sig Session {
+    commands: set Command,
+    active: one Bool
+}
+
+pred ValidSession[s: Session] {
+    s.active = True implies some s.commands
+}
+
+pred CommandSequence[s: Session] {
+    all c1, c2: s.commands |
+        c1 != c2 implies c1.timestamp != c2.timestamp
+}
+
+run ValidSession for 3 but exactly 1 Session
+#+END_SRC
+
+** Basic Build System
+
+#+BEGIN_SRC makefile :tangle Makefile
+.PHONY: help build test clean setup verify
+
+help:
+	@echo "Available targets:"
+	@echo "  setup    - Create directory structure"
+	@echo "  build    - Build the project"
+	@echo "  test     - Run tests"
+	@echo "  verify   - Verify formal specifications"
+	@echo "  clean    - Clean build artifacts"
+
+setup:
+	@bash create-dirs.sh
+	@echo "Directory structure created"
+
+build:
+	@echo "Build target - to be implemented"
+
+test:
+	@echo "Test target - to be implemented"
+
+verify:
+	@echo "Verification target - to be implemented"
+
+clean:
+	@rm -rf target/ dist/ tmp/*
+	@echo "Cleaned build artifacts"
+#+END_SRC
+
+** Git Configuration
+
+#+BEGIN_SRC gitignore :tangle .gitignore
+.env
+node_modules/
+target/
+dist/
+.shadow-cljs/
+tmp/*
+logs/*.log
+.DS_Store
+*.swp
+*.swo
+*~
+#+END_SRC
+
+** License
+
+#+BEGIN_SRC text :tangle LICENSE
+MIT License
+
+Copyright (c) 2025 jwalsh
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+#+END_SRC

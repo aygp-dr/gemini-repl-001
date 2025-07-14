@@ -1,0 +1,14 @@
+#+TITLE: Testing Infrastructure
+#+AUTHOR: jwalsh
+#+DATE: 2025-07-14
+
+* Testing
+
+Unit tests and integration tests for the Gemini REPL.
+
+** Test Types
+
+- Unit tests for core functions
+- Integration tests for API communication
+- REPL interaction testing
+- Formal specification validation

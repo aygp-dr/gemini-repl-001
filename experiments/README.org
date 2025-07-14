@@ -1,0 +1,14 @@
+#+TITLE: Experiments
+#+AUTHOR: jwalsh
+#+DATE: 2025-07-14
+
+* Experiments
+
+Experimental code and proof-of-concept implementations.
+
+** Guidelines
+
+- Keep experiments isolated
+- Document findings
+- Clean up completed experiments
+- Archive useful patterns

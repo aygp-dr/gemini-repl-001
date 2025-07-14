@@ -1,0 +1,23 @@
+module state
+
+sig Command {
+    input: one String,
+    output: lone String,
+    timestamp: one Int
+}
+
+sig Session {
+    commands: set Command,
+    active: one Bool
+}
+
+pred ValidSession[s: Session] {
+    s.active = True implies some s.commands
+}
+
+pred CommandSequence[s: Session] {
+    all c1, c2: s.commands |
+        c1 != c2 implies c1.timestamp != c2.timestamp
+}
+
+run ValidSession for 3 but exactly 1 Session

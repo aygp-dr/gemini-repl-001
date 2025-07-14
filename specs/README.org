@@ -1,0 +1,20 @@
+#+TITLE: Formal Specifications
+#+AUTHOR: jwalsh
+#+DATE: 2025-07-14
+
+* Formal Specifications
+
+This directory contains formal method specifications for the Gemini REPL:
+
+- TLA+ specifications for system behavior
+- Alloy models for structural properties
+- Interface specifications
+- State machine definitions
+
+** Files
+
+- =interfaces.tla= - API and command interfaces
+- =commands.tla= - Command processing logic
+- =api_client.tla= - Gemini API client behavior
+- =state.alloy= - State structure validation
+- =gemini_api.alloy= - API model validation
