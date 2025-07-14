@@ -9,3 +9,5 @@ logs/*.log
 *.swp
 *.swo
 *~
+releases/v*/
+*.tar.gz

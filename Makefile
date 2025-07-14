@@ -1,4 +1,4 @@
-.PHONY: help setup build dev run test clean lint verify install banner dashboard
+.PHONY: help setup build dev run test clean lint verify install banner dashboard release-patch release-minor release-major
 
 help:
 	@echo "Available targets:"
@@ -13,6 +13,11 @@ help:
 	@echo "  banner   - Generate ASCII banner"
 	@echo "  dashboard - Launch tmux development dashboard"
 	@echo "  clean    - Clean build artifacts"
+	@echo ""
+	@echo "Release targets:"
+	@echo "  release-patch - Create patch release (0.0.x)"
+	@echo "  release-minor - Create minor release (0.x.0)"
+	@echo "  release-major - Create major release (x.0.0)"
 
 install:
 	@npm install
@@ -73,3 +78,23 @@ clean:
 
 dashboard:
 	@bash scripts/tmux-dashboard.sh
+
+# Release targets
+release-patch: release-prep
+	@bash scripts/release.sh patch
+
+release-minor: release-prep
+	@bash scripts/release.sh minor
+
+release-major: release-prep
+	@bash scripts/release.sh major
+
+release-prep:
+	@echo "Checking for uncommitted changes..."
+	@git diff-index --quiet HEAD -- || (echo "Error: Uncommitted changes found" && exit 1)
+	@echo "Running tests..."
+	@$(MAKE) test
+	@echo "Running lint..."
+	@$(MAKE) lint
+	@echo "Building project..."
+	@$(MAKE) build
