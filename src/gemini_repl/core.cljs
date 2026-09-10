@@ -1,5 +1,7 @@
 (ns gemini-repl.core
-  (:require [cljs.nodejs :as nodejs]))
+  (:require [cljs.nodejs :as nodejs]
+            [clojure.spec.alpha :as s]
+            [gemini-repl.specs :as specs]))
 
 (nodejs/enable-util-print!)
 
@@ -38,14 +40,26 @@ Gemini REPL Commands:
   
 Type your prompt and press Enter to send to Gemini API."))
 
+(s/fdef show-help
+  :args (s/cat)
+  :ret nil?)
+
 (defn clear-screen []
   (print "\033[2J\033[H"))
+
+(s/fdef clear-screen
+  :args (s/cat)
+  :ret nil?)
 
 (defn show-stats []
   (println "\nSession Statistics:")
   (println "  Total requests: 0")
   (println "  Total tokens: 0")
   (println "  Session time: 0 minutes"))
+
+(s/fdef show-stats
+  :args (s/cat)
+  :ret nil?)
 
 (defn show-context []
   (println "\nConversation Context:")
@@ -55,6 +69,10 @@ Type your prompt and press Enter to send to Gemini API."))
       (println (str "  " (inc idx) ". [" (:role msg) "] "
                     (subs (:content msg) 0 (min 50 (count (:content msg))))
                     (when (> (count (:content msg)) 50) "..."))))))
+
+(s/fdef show-context
+  :args (s/cat)
+  :ret nil?)
 
 ;; Logging
 (defn log-to-fifo [event-type data]
@@ -69,6 +87,10 @@ Type your prompt and press Enter to send to Gemini API."))
           ;; Silently ignore FIFO errors
           nil)))))
 
+(s/fdef log-to-fifo
+  :args (s/cat :event-type ::specs/event-type :data ::specs/log-data)
+  :ret nil?)
+
 (defn log-to-file [event-type data]
   (when (and log-enabled (or (= log-type "file") (= log-type "both")))
     (let [log-entry (js/JSON.stringify
@@ -81,9 +103,17 @@ Type your prompt and press Enter to send to Gemini API."))
           ;; Silently ignore file errors
           nil)))))
 
+(s/fdef log-to-file
+  :args (s/cat :event-type ::specs/event-type :data ::specs/log-data)
+  :ret nil?)
+
 (defn log-entry [event-type data]
   (log-to-fifo event-type data)
   (log-to-file event-type data))
+
+(s/fdef log-entry
+  :args (s/cat :event-type ::specs/event-type :data ::specs/log-data)
+  :ret nil?)
 
 ;; API Communication
 (defn make-request [prompt callback]
@@ -130,6 +160,10 @@ Type your prompt and press Enter to send to Gemini API."))
     (.write req data)
     (.end req)))
 
+(s/fdef make-request
+  :args (s/cat :prompt string? :callback fn?)
+  :ret some?)
+
 (defn format-response [response]
   (if response
     (try
@@ -154,6 +188,15 @@ Type your prompt and press Enter to send to Gemini API."))
          :metadata nil}))
     {:content "No response received"
      :metadata nil}))
+
+(s/fdef format-response
+  :args (s/cat :response (s/nilable ::specs/response-body))
+  :ret ::specs/formatted
+  ;; whenever the response carries a first candidate's text, that text is
+  ;; the :content (make-request stores it in the history as the model turn)
+  :fn (fn [{{:keys [response]} :args ret :ret}]
+        (let [text (some-> response .-candidates (aget 0) .-content .-parts (aget 0) .-text)]
+          (or (nil? text) (= text (:content ret))))))
 
 ;; REPL Loop
 (defn process-input [input]
@@ -184,6 +227,11 @@ Type your prompt and press Enter to send to Gemini API."))
                                   (print "\n> ")
                                   (.prompt @rl true)))))))))
 
+(s/fdef process-input
+  :args (s/cat :input ::specs/input)
+  ;; returns whatever readline/https returned; nothing to promise
+  :ret any?)
+
 (defn show-banner []
   (try
     (let [banner-path "resources/repl-banner.txt"]
@@ -193,6 +241,10 @@ Type your prompt and press Enter to send to Gemini API."))
     (catch js/Error _e
       (println "GEMINI REPL v0.1.0\n==================\n")))
   (println "Type /help for commands, /exit to quit.\n"))
+
+(s/fdef show-banner
+  :args (s/cat)
+  :ret nil?)
 
 (defn -main [& _args]
   (show-banner)
@@ -213,7 +265,15 @@ Type your prompt and press Enter to send to Gemini API."))
 
     (.prompt rl-interface)))
 
+(s/fdef -main
+  :args (s/cat :args (s/* string?))
+  :ret any?)
+
 (defn reload []
   (println "Code reloaded!"))
+
+(s/fdef reload
+  :args (s/cat)
+  :ret nil?)
 
 (set! *main-cli-fn* -main)

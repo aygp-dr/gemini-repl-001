@@ -1,6 +1,11 @@
 (ns gemini-repl.core-test
-  (:require [cljs.test :refer-macros [deftest is testing]]
+  (:require [cljs.test :refer-macros [deftest is testing use-fixtures]]
+            [clojure.spec.test.alpha :as stest]
             [gemini-repl.core :as core]))
+
+;; Exercise every s/fdef :args spec while the unit tests run.
+(use-fixtures :once
+  (fn [f] (stest/instrument) (try (f) (finally (stest/unstrument)))))
 
 (deftest format-response-test
   (testing "Format valid response"
