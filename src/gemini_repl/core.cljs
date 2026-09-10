@@ -52,9 +52,9 @@ Type your prompt and press Enter to send to Gemini API."))
   (if (empty? @conversation-history)
     (println "  No conversation history yet.")
     (doseq [[idx msg] (map-indexed vector @conversation-history)]
-      (println (str "  " (inc idx) ". [" (:role msg) "] " 
-                   (subs (:content msg) 0 (min 50 (count (:content msg)))) 
-                   (when (> (count (:content msg)) 50) "..."))))))
+      (println (str "  " (inc idx) ". [" (:role msg) "] "
+                    (subs (:content msg) 0 (min 50 (count (:content msg))))
+                    (when (> (count (:content msg)) 50) "..."))))))
 
 ;; Logging
 (defn log-to-fifo [event-type data]
@@ -89,15 +89,15 @@ Type your prompt and press Enter to send to Gemini API."))
 (defn make-request [prompt callback]
   ;; Add user message to history
   (swap! conversation-history conj {:role "user" :content prompt})
-  
+
   (log-entry "api_request" {:prompt_length (count prompt)
-                             :model "gemini-1.5-flash"})
-  
+                            :model "gemini-1.5-flash"})
+
   ;; Build contents array with full conversation history
   (let [contents (clj->js (mapv (fn [msg]
-                                   #js {:role (:role msg)
-                                        :parts #js [#js {:text (:content msg)}]})
-                                 @conversation-history))
+                                  #js {:role (:role msg)
+                                       :parts #js [#js {:text (:content msg)}]})
+                                @conversation-history))
         data (js/JSON.stringify #js {:contents contents})
         options #js {:hostname api-endpoint
                      :port 443
@@ -115,7 +115,7 @@ Type your prompt and press Enter to send to Gemini API."))
                                            (let [body (.toString (.concat js/Buffer (clj->js @chunks)))
                                                  response (js/JSON.parse body)
                                                  duration (- (.now js/Date) start-time)]
-                                             (log-entry "api_response" 
+                                             (log-entry "api_response"
                                                         {:duration_ms duration
                                                          :status (.-statusCode res)
                                                          :has_candidates (boolean (.-candidates response))})
@@ -135,11 +135,11 @@ Type your prompt and press Enter to send to Gemini API."))
     (try
       (let [candidates (.-candidates response)
             content (-> candidates
-                       (aget 0)
-                       (.-content)
-                       (.-parts)
-                       (aget 0)
-                       (.-text))
+                        (aget 0)
+                        (.-content)
+                        (.-parts)
+                        (aget 0)
+                        (.-text))
             usage-metadata (.-usageMetadata response)
             total-tokens (.-totalTokenCount usage-metadata)
             ;; Rough cost estimate (Gemini 1.5 Flash pricing)
@@ -177,10 +177,10 @@ Type your prompt and press Enter to send to Gemini API."))
                                       duration (/ (- (.now js/Date) start-time) 1000)]
                                   (println (:content formatted))
                                   (when-let [metadata (:metadata formatted)]
-                                    (println (str "[" (:confidence metadata) " " 
-                                                (:tokens metadata) " tokens | " 
-                                                "$" (.toFixed (:cost metadata) 4) " | "
-                                                (.toFixed duration 1) "s]")))
+                                    (println (str "[" (:confidence metadata) " "
+                                                  (:tokens metadata) " tokens | "
+                                                  "$" (.toFixed (:cost metadata) 4) " | "
+                                                  (.toFixed duration 1) "s]")))
                                   (print "\n> ")
                                   (.prompt @rl true)))))))))
 
@@ -201,16 +201,16 @@ Type your prompt and press Enter to send to Gemini API."))
                                             :output (.-stdout process)
                                             :prompt "> "})]
     (reset! rl rl-interface)
-    
+
     (.on rl-interface "line"
          (fn [line]
            (process-input line)))
-    
+
     (.on rl-interface "close"
          (fn []
            (println "\nGoodbye!")
            (.exit process 0)))
-    
+
     (.prompt rl-interface)))
 
 (defn reload []
