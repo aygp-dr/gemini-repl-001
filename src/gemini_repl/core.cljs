@@ -174,15 +174,15 @@ Type your prompt and press Enter to send to Gemini API."))
                         (.-parts)
                         (aget 0)
                         (.-text))
-            usage-metadata (.-usageMetadata response)
-            total-tokens (.-totalTokenCount usage-metadata)
-            ;; Rough cost estimate (Gemini 1.5 Flash pricing)
-            cost (* total-tokens 0.0000001)
-            confidence "🟢"]  ;; TODO: Determine from response
+            usage-metadata (.-usageMetadata response)]
         {:content content
-         :metadata {:tokens total-tokens
-                    :cost cost
-                    :confidence confidence}})
+         ;; usageMetadata is optional: without it there is no usage line
+         :metadata (when usage-metadata
+                     (let [total-tokens (.-totalTokenCount usage-metadata)]
+                       {:tokens total-tokens
+                        ;; Rough cost estimate (Gemini 1.5 Flash pricing)
+                        :cost (* total-tokens 0.0000001)
+                        :confidence "🟢"}))})  ;; TODO: Determine from response
       (catch js/Error e
         {:content (str "Error parsing response: " (.-message e))
          :metadata nil}))
