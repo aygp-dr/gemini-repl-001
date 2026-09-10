@@ -12,13 +12,13 @@
     (let [mock-response #js {:candidates #js [#js {:content
                                                    #js {:parts
                                                         #js [#js {:text "Hello from Gemini!"}]}}]}]
-      (is (= "Hello from Gemini!" (core/format-response mock-response)))))
+      (is (= "Hello from Gemini!" (:content (core/format-response mock-response))))))
 
   (testing "Handle nil response"
-    (is (= "No response received" (core/format-response nil))))
+    (is (= "No response received" (:content (core/format-response nil)))))
 
   (testing "Handle malformed response"
-    (is (string? (core/format-response #js {})))))
+    (is (string? (:content (core/format-response #js {}))))))
 
 (deftest api-key-test
   (testing "API key is configured"
