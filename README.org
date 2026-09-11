@@ -89,6 +89,31 @@ make lint
 make dev
 #+END_SRC
 
+*** bb tasks
+
+This repo follows the aygp-dr Clojure standard: =deps.edn= is the canonical
+manifest (=shadow-cljs.edn= uses ={:deps {:aliases [:cljs :dev]}}=) and
+=bb.edn= provides the tasks. Run =npm ci --ignore-scripts= once first.
+
+| Task                    | What it does                                           |
+|-------------------------+--------------------------------------------------------|
+| =bb test=               | =npx shadow-cljs compile test && node target/test.js=  |
+| =bb lint=               | clj-kondo (fails on errors)                            |
+| =bb fmt= / =bb fmt:fix= | cljfmt check / fix                                     |
+| =bb check=              | lint + fmt + test (CI runs this)                       |
+
+=bb test= runs node with a dummy =GEMINI_API_KEY= (the core namespace refuses
+to load without one), so tests never see a real key and never call the API.
+
+*** Specs
+
+Data specs live in =src/gemini_repl/specs.cljs=, and each public fn in
+=gemini-repl.core= has an =s/fdef= right after its =defn= (see the
+[[https://clojure.org/guides/spec][clojure.spec guide]]).
+=test/gemini_repl/specs_test.cljs= runs =stest/check= over =format-response=
+and property-tests the =/context= history formatting. The unit tests run with
+instrumentation on; at the shadow-cljs REPL, =(require 'user)= instruments too.
+
 ** Project Structure
 
 - =src/= - ClojureScript source code

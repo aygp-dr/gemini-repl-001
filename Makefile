@@ -55,7 +55,7 @@ run: build
 	@bash scripts/run.sh
 
 test: install
-	@npm test
+	@bb test
 	@if command -v expect >/dev/null 2>&1; then \
 		echo "Running REPL tests..."; \
 		./scripts/test-repl.exp; \
@@ -65,7 +65,7 @@ test: install
 
 lint:
 	@echo "Linting ClojureScript files..."
-	@npx clj-kondo --lint src test || true
+	@bb lint
 
 verify:
 	@echo "Running formal verification..."

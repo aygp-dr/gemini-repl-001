@@ -1,5 +1,7 @@
 (ns gemini-repl.core
-  (:require [cljs.nodejs :as nodejs]))
+  (:require [cljs.nodejs :as nodejs]
+            [clojure.spec.alpha :as s]
+            [gemini-repl.specs :as specs]))
 
 (nodejs/enable-util-print!)
 
@@ -38,8 +40,16 @@ Gemini REPL Commands:
   
 Type your prompt and press Enter to send to Gemini API."))
 
+(s/fdef show-help
+  :args (s/cat)
+  :ret nil?)
+
 (defn clear-screen []
   (print "\033[2J\033[H"))
+
+(s/fdef clear-screen
+  :args (s/cat)
+  :ret nil?)
 
 (defn show-stats []
   (println "\nSession Statistics:")
@@ -47,14 +57,22 @@ Type your prompt and press Enter to send to Gemini API."))
   (println "  Total tokens: 0")
   (println "  Session time: 0 minutes"))
 
+(s/fdef show-stats
+  :args (s/cat)
+  :ret nil?)
+
 (defn show-context []
   (println "\nConversation Context:")
   (if (empty? @conversation-history)
     (println "  No conversation history yet.")
     (doseq [[idx msg] (map-indexed vector @conversation-history)]
-      (println (str "  " (inc idx) ". [" (:role msg) "] " 
-                   (subs (:content msg) 0 (min 50 (count (:content msg)))) 
-                   (when (> (count (:content msg)) 50) "..."))))))
+      (println (str "  " (inc idx) ". [" (:role msg) "] "
+                    (subs (:content msg) 0 (min 50 (count (:content msg))))
+                    (when (> (count (:content msg)) 50) "..."))))))
+
+(s/fdef show-context
+  :args (s/cat)
+  :ret nil?)
 
 ;; Logging
 (defn log-to-fifo [event-type data]
@@ -69,6 +87,10 @@ Type your prompt and press Enter to send to Gemini API."))
           ;; Silently ignore FIFO errors
           nil)))))
 
+(s/fdef log-to-fifo
+  :args (s/cat :event-type ::specs/event-type :data ::specs/log-data)
+  :ret nil?)
+
 (defn log-to-file [event-type data]
   (when (and log-enabled (or (= log-type "file") (= log-type "both")))
     (let [log-entry (js/JSON.stringify
@@ -81,23 +103,31 @@ Type your prompt and press Enter to send to Gemini API."))
           ;; Silently ignore file errors
           nil)))))
 
+(s/fdef log-to-file
+  :args (s/cat :event-type ::specs/event-type :data ::specs/log-data)
+  :ret nil?)
+
 (defn log-entry [event-type data]
   (log-to-fifo event-type data)
   (log-to-file event-type data))
+
+(s/fdef log-entry
+  :args (s/cat :event-type ::specs/event-type :data ::specs/log-data)
+  :ret nil?)
 
 ;; API Communication
 (defn make-request [prompt callback]
   ;; Add user message to history
   (swap! conversation-history conj {:role "user" :content prompt})
-  
+
   (log-entry "api_request" {:prompt_length (count prompt)
-                             :model "gemini-1.5-flash"})
-  
+                            :model "gemini-1.5-flash"})
+
   ;; Build contents array with full conversation history
   (let [contents (clj->js (mapv (fn [msg]
-                                   #js {:role (:role msg)
-                                        :parts #js [#js {:text (:content msg)}]})
-                                 @conversation-history))
+                                  #js {:role (:role msg)
+                                       :parts #js [#js {:text (:content msg)}]})
+                                @conversation-history))
         data (js/JSON.stringify #js {:contents contents})
         options #js {:hostname api-endpoint
                      :port 443
@@ -115,7 +145,7 @@ Type your prompt and press Enter to send to Gemini API."))
                                            (let [body (.toString (.concat js/Buffer (clj->js @chunks)))
                                                  response (js/JSON.parse body)
                                                  duration (- (.now js/Date) start-time)]
-                                             (log-entry "api_response" 
+                                             (log-entry "api_response"
                                                         {:duration_ms duration
                                                          :status (.-statusCode res)
                                                          :has_candidates (boolean (.-candidates response))})
@@ -130,30 +160,43 @@ Type your prompt and press Enter to send to Gemini API."))
     (.write req data)
     (.end req)))
 
+(s/fdef make-request
+  :args (s/cat :prompt string? :callback fn?)
+  :ret some?)
+
 (defn format-response [response]
   (if response
     (try
       (let [candidates (.-candidates response)
             content (-> candidates
-                       (aget 0)
-                       (.-content)
-                       (.-parts)
-                       (aget 0)
-                       (.-text))
-            usage-metadata (.-usageMetadata response)
-            total-tokens (.-totalTokenCount usage-metadata)
-            ;; Rough cost estimate (Gemini 1.5 Flash pricing)
-            cost (* total-tokens 0.0000001)
-            confidence "🟢"]  ;; TODO: Determine from response
+                        (aget 0)
+                        (.-content)
+                        (.-parts)
+                        (aget 0)
+                        (.-text))
+            usage-metadata (.-usageMetadata response)]
         {:content content
-         :metadata {:tokens total-tokens
-                    :cost cost
-                    :confidence confidence}})
+         ;; usageMetadata is optional: without it there is no usage line
+         :metadata (when usage-metadata
+                     (let [total-tokens (.-totalTokenCount usage-metadata)]
+                       {:tokens total-tokens
+                        ;; Rough cost estimate (Gemini 1.5 Flash pricing)
+                        :cost (* total-tokens 0.0000001)
+                        :confidence "🟢"}))})  ;; TODO: Determine from response
       (catch js/Error e
         {:content (str "Error parsing response: " (.-message e))
          :metadata nil}))
     {:content "No response received"
      :metadata nil}))
+
+(s/fdef format-response
+  :args (s/cat :response (s/nilable ::specs/response-body))
+  :ret ::specs/formatted
+  ;; whenever the response carries a first candidate's text, that text is
+  ;; the :content (make-request stores it in the history as the model turn)
+  :fn (fn [{{:keys [response]} :args ret :ret}]
+        (let [text (some-> response .-candidates (aget 0) .-content .-parts (aget 0) .-text)]
+          (or (nil? text) (= text (:content ret))))))
 
 ;; REPL Loop
 (defn process-input [input]
@@ -177,12 +220,17 @@ Type your prompt and press Enter to send to Gemini API."))
                                       duration (/ (- (.now js/Date) start-time) 1000)]
                                   (println (:content formatted))
                                   (when-let [metadata (:metadata formatted)]
-                                    (println (str "[" (:confidence metadata) " " 
-                                                (:tokens metadata) " tokens | " 
-                                                "$" (.toFixed (:cost metadata) 4) " | "
-                                                (.toFixed duration 1) "s]")))
+                                    (println (str "[" (:confidence metadata) " "
+                                                  (:tokens metadata) " tokens | "
+                                                  "$" (.toFixed (:cost metadata) 4) " | "
+                                                  (.toFixed duration 1) "s]")))
                                   (print "\n> ")
                                   (.prompt @rl true)))))))))
+
+(s/fdef process-input
+  :args (s/cat :input ::specs/input)
+  ;; returns whatever readline/https returned; nothing to promise
+  :ret any?)
 
 (defn show-banner []
   (try
@@ -194,6 +242,10 @@ Type your prompt and press Enter to send to Gemini API."))
       (println "GEMINI REPL v0.1.0\n==================\n")))
   (println "Type /help for commands, /exit to quit.\n"))
 
+(s/fdef show-banner
+  :args (s/cat)
+  :ret nil?)
+
 (defn -main [& _args]
   (show-banner)
   (let [rl-interface (.createInterface readline
@@ -201,19 +253,27 @@ Type your prompt and press Enter to send to Gemini API."))
                                             :output (.-stdout process)
                                             :prompt "> "})]
     (reset! rl rl-interface)
-    
+
     (.on rl-interface "line"
          (fn [line]
            (process-input line)))
-    
+
     (.on rl-interface "close"
          (fn []
            (println "\nGoodbye!")
            (.exit process 0)))
-    
+
     (.prompt rl-interface)))
+
+(s/fdef -main
+  :args (s/cat :args (s/* string?))
+  :ret any?)
 
 (defn reload []
   (println "Code reloaded!"))
+
+(s/fdef reload
+  :args (s/cat)
+  :ret nil?)
 
 (set! *main-cli-fn* -main)

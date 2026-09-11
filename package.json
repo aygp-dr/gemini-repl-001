@@ -7,7 +7,7 @@
     "dev": "shadow-cljs watch app",
     "build": "shadow-cljs release app",
     "clean": "rm -rf target .shadow-cljs",
-    "test": "shadow-cljs compile test && node target/test.js",
+    "test": "bb test",
     "repl": "shadow-cljs cljs-repl app"
   },
   "keywords": ["clojurescript", "gemini", "repl", "api"],
